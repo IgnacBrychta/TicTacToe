@@ -1,5 +1,3 @@
-using System.Security.Cryptography.Xml;
-
 namespace TicTacToe;
 
 public partial class TicTacToe : Form
@@ -11,11 +9,11 @@ public partial class TicTacToe : Form
 	bool currentPlayerWon = false;
 	int scoreCrosses = 0;
 	int scoreCircles = 0;
-	Bitmap currentPlayerCrosses;
-	Bitmap currentPlayerCircles;
+	Bitmap? currentPlayerCrosses;
+	Bitmap? currentPlayerCircles;
 	public TicTacToe()
 	{
-#warning texty, vrstvy zobrazovani, viteznou hlasku, 
+#warning vrstvy zobrazovani 
 		InitializeComponent();
 		SetControlTheme(this);
 		SetColorTheme(this);
@@ -26,6 +24,8 @@ public partial class TicTacToe : Form
 		TicTacToeDrawer.DrawTable(bitmap, table);
 		tableScreen.Image = bitmap;
 		SetSubscriptions();
+		Icon = new Icon("../../../resources/icon.ico");
+		new AdvertisementController("../../../resources", sponsoredPictureBox) { RefreshDelay = 6000 }.Start();
 	}
 
 	private void SetSubscriptions()
@@ -56,13 +56,26 @@ public partial class TicTacToe : Form
 
 		cell.cellContent = currentPlayer;
 
-		currentPlayerWon = TryFindWinnerHorinzontally(currentPlayer) |
-			 TryFindWinnerVertically(currentPlayer) |
-			 TryFindWinnerFromTopLeft(currentPlayer);
+		(bool horizontalWin, List<TicTacToeCell>? cellsHorizontal) = TryFindWinnerHorinzontally(currentPlayer);
+		(bool verticalWin, List<TicTacToeCell>? cellsVertical) = TryFindWinnerVertically(currentPlayer);
+		(bool diagonalWin, List<TicTacToeCell>? cellsDiagonal) = TryFindWinnerFromTopLeft(currentPlayer);
+		currentPlayerWon = horizontalWin || verticalWin || diagonalWin;
+
 		if (currentPlayerWon)
 		{
 			if (currentPlayer == CellContent.Cross) scoreCrosses++;
 			else scoreCircles++;
+
+			// must be AddRange() and not winningCells = cellsHorizontal - 
+			// the player might win in more than one direction
+			List<TicTacToeCell> winningCells = new();
+			if (horizontalWin) winningCells.AddRange(cellsHorizontal!);
+			if (verticalWin) winningCells.AddRange(cellsVertical!);
+			if (diagonalWin) winningCells.AddRange(cellsDiagonal!);
+
+			// highlighted (winning) cells are shown with a different color
+			winningCells.ForEach(cell => cell.highlight = true);
+
 			CurrentPlayerWon();
 		}
 		else SwitchCurrentPlayer();
@@ -85,7 +98,12 @@ public partial class TicTacToe : Form
 
 	private void CurrentPlayerWon()
 	{
-		MessageBox.Show("Player won");
+		MessageBox.Show(
+			"Je to prostì borec. GG.",
+			$"{(currentPlayer == CellContent.Cross ? "Køížky" : "Koleèka")} vyhrávají!",
+			MessageBoxButtons.OK,
+			MessageBoxIcon.Information
+			);
 		scoreCirclesText.Text = scoreCircles.ToString();
 		scoreCrossesText.Text = scoreCrosses.ToString();
 	}
@@ -118,7 +136,8 @@ public partial class TicTacToe : Form
 	private void ConfigureUI()
 	{
 		Point anchor = new Point(0, 0);
-		int cellWidth = 170;
+		int cellWidth = scoreCirclesPictureBox.Width;// 170;
+		const float penWidth = 40f;
 		Bitmap bitmap = new Bitmap(scoreCirclesPictureBox.Width, scoreCirclesPictureBox.Height);
 		TicTacToeDrawer.DrawCircle(
 			Graphics.FromImage(bitmap),
@@ -138,12 +157,16 @@ public partial class TicTacToe : Form
 		scoreCrossesPictureBox.Image = bitmap;
 
 
+
+		const int offset = 3;
+
 		currentPlayerCircles = new Bitmap(currentPlayePictureBox.Width, currentPlayePictureBox.Height);
 		TicTacToeDrawer.DrawBoundary(currentPlayerCircles);
 		TicTacToeDrawer.DrawCircle(
 			Graphics.FromImage(currentPlayerCircles),
 			anchor,
-			currentPlayePictureBox.Width
+			currentPlayePictureBox.Width - offset,
+			new Pen(TicTacToeDrawer.circleColor, penWidth)
 			);
 
 		currentPlayerCrosses = new Bitmap(currentPlayePictureBox.Width, currentPlayePictureBox.Height);
@@ -151,7 +174,8 @@ public partial class TicTacToe : Form
 		TicTacToeDrawer.DrawCross(
 			Graphics.FromImage(currentPlayerCrosses),
 			anchor,
-			currentPlayePictureBox.Width
+			currentPlayePictureBox.Width - offset,
+			new Pen(TicTacToeDrawer.crossColor, penWidth)
 			);
 
 		SwitchCurrentPlayer();
@@ -183,104 +207,117 @@ public partial class TicTacToe : Form
 		control.ForeColor = Color.White;
 	}
 
-	private bool TryFindWinnerHorinzontally(CellContent shape)
+	private (bool, List<TicTacToeCell>?) TryFindWinnerHorinzontally(CellContent shape)
 	{
 		int shapeCount = 0;
+		List<TicTacToeCell> cells = new();
 		for (int i = 0; i < tableSize; i++)
 		{
 			for (int j = 0; j < tableSize; j++)
 			{
 				TicTacToeCell cell = table[j, i];
-				shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-				if (shapeCount == elementsInRowToWin) return true;
+				if (cell.cellContent == shape)
+				{
+					shapeCount++;
+					cells.Add(cell);
+				}
+				else
+				{
+					shapeCount = 0;
+					cells.Clear();
+				}
+				//shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
+				if (shapeCount == elementsInRowToWin) return (true, cells);
 			}
 			shapeCount = 0;
+			cells.Clear();
 		}
 
-		return false;
+		return (false, null);
 	}
 
-	private bool TryFindWinnerVertically(CellContent shape)
+	private (bool, List<TicTacToeCell>?) TryFindWinnerVertically(CellContent shape)
 	{
 		int shapeCount = 0;
+		List<TicTacToeCell> cells = new();
 		for (int i = 0; i < tableSize; i++)
 		{
 			for (int j = 0; j < tableSize; j++)
 			{
 				TicTacToeCell cell = table[i, j];
-				shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-				if (shapeCount == elementsInRowToWin) return true;
+				if (cell.cellContent == shape)
+				{
+					shapeCount++;
+					cells.Add(cell);
+				}
+				else
+				{
+					shapeCount = 0;
+					cells.Clear();
+				}
+				if (shapeCount == elementsInRowToWin) return (true, cells);
 			}
 			shapeCount = 0;
+			cells.Clear();
 		}
 
-		return false;
+		return (false, null);
 	}
 
-	private bool TryFindWinnerFromTopLeft(CellContent shape)
+	private (bool, List<TicTacToeCell>?) TryFindWinnerFromTopLeft(CellContent shape)
 	{
+		List<TicTacToeCell> cells = new();
 		// Check diagonals from top-left to bottom-right
 		for (int startCol = 0; startCol <= tableSize - elementsInRowToWin; startCol++)
 		{
 			for (int startRow = 0; startRow <= tableSize - elementsInRowToWin; startRow++)
 			{
 				int shapeCount = 0;
+				cells.Clear();
 				for (int i = 0; i < elementsInRowToWin; i++)
 				{
 					TicTacToeCell cell = table[startRow + i, startCol + i];
-					shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-					if (shapeCount == elementsInRowToWin) return true;
+					if (cell.cellContent == shape)
+					{
+						shapeCount++;
+						cells.Add(cell);
+					}
+					else
+					{
+						shapeCount = 0;
+						cells.Clear();
+					}
+					if (shapeCount == elementsInRowToWin) return (true, cells);
 				}
 			}
 		}
 
+		cells.Clear();
 		// Check diagonals from top-right to bottom-left
 		for (int startCol = elementsInRowToWin - 1; startCol < tableSize; startCol++)
 		{
 			for (int startRow = 0; startRow <= tableSize - elementsInRowToWin; startRow++)
 			{
 				int shapeCount = 0;
+				cells.Clear();
 				for (int i = 0; i < elementsInRowToWin; i++)
 				{
 					TicTacToeCell cell = table[startRow + i, startCol - i];
-					shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-					if (shapeCount == elementsInRowToWin) return true;
+					if (cell.cellContent == shape)
+					{
+						shapeCount++;
+						cells.Add(cell);
+					}
+					else
+					{
+						shapeCount = 0;
+						cells.Clear();
+					}
+					if (shapeCount == elementsInRowToWin) return (true, cells);
 				}
 			}
 		}
 
-		return false;
+		return (false, null);
 	}
-#if no
-	private bool TryFindWinnerFromTopLeft(CellContent shape)
-	{
-		int shapeCount = 0;
-		int offset = 0;
-		const int diagonalTableSize = 29;
-		for (int i = diagonalTableSize - 1; i >= 0; i--)
-		{
-			for (int j = 0; j < diagonalTableSize; j++)
-			{
-				int xOffset = j + offset;
-				int yOffset = i - offset;
-				if (xOffset < 0				|| 
-					yOffset < 0				||
-					xOffset >= tableSize	|| 
-					yOffset >= tableSize)
-				{
-					offset = 0;
-					break;
-				}
-				TicTacToeCell cell = table[xOffset, yOffset];
-				shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-				if (shapeCount == elementsInRowToWin) return true;
-
-			}
-			shapeCount = 0;
-
-		}
-
-		return false;
-	}
-#endif
 }

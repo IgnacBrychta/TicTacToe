@@ -9,12 +9,15 @@ namespace TicTacToe;
 internal static class TicTacToeDrawer
 {
 	public const int cellWidth = 68;
-	private static Color crossColor = Color.Red;
-	private static Color circleColor = Color.Blue;
+	public static Color crossColor = Color.Red;
+	public static Color circleColor = Color.Blue;
 	public const float penWidth = 10f;
+	public const int sizedPenWidth = (int)penWidth / 2 + 3;
 	private static Color cellBorderColor = Color.White;
+	private static Color highlightedBorderColor = Color.Yellow;
 	private static Pen crossPen = new Pen(crossColor, penWidth);
 	private static Pen cellBorderPen = new Pen(cellBorderColor, penWidth);
+	private static Pen highlightedCellBorderPen = new Pen(highlightedBorderColor, penWidth);
 	private static Pen circlePen = new Pen(circleColor, penWidth);
 	/// <summary>
 	/// Draws a Tic Tac Toe table on a <see cref="Bitmap"/>, but does not clear it beforehead. Use <see cref="ClearScreen(Bitmap, Color)"/> for that instead.
@@ -32,11 +35,32 @@ internal static class TicTacToeDrawer
 				DrawTableCell(cell, g);
 			}
 		}
+
+		DrawHighlightedCells(g, table);
+	}
+
+	private static void DrawHighlightedCells(Graphics g, TicTacToeCell[,] table)
+	{
+		for (int i = 0; i < TicTacToe.tableSize; i++)
+		{
+			for (int j = 0; j < TicTacToe.tableSize; j++)
+			{
+				TicTacToeCell cell = table[i, j];
+				if (!cell.highlight) continue;
+
+				g.DrawRectangle(
+					highlightedCellBorderPen,
+					cell.anchor.X * cellWidth,
+					cell.anchor.Y * cellWidth,
+					cellWidth,
+					cellWidth
+					);
+			}
+		}
 	}
 
 	private static void DrawTableCell(TicTacToeCell cell, Graphics g)
 	{
-
 		g.DrawRectangle(
 			cellBorderPen,
 			cell.anchor.X * cellWidth,
@@ -67,21 +91,21 @@ internal static class TicTacToeDrawer
 	{
 		g.DrawEllipse(
 			circlePen,
-			anchor.X * cellWidth, 
-			anchor.Y * cellWidth,
-			cellWidth, 
-			cellWidth
+			anchor.X * cellWidth + sizedPenWidth, 
+			anchor.Y * cellWidth + sizedPenWidth,
+			cellWidth - 2 * sizedPenWidth, 
+			cellWidth - 2 * sizedPenWidth
 			);
 	}
 
-	internal static void DrawCircle(Graphics g, Point anchor, int cellWidth)
+	internal static void DrawCircle(Graphics g, Point anchor, int cellWidth, Pen? pen = null)
 	{
 		g.DrawEllipse(
-			circlePen,
+			pen ?? circlePen,
 			anchor.X,
 			anchor.Y,
 			anchor.X + cellWidth,
-			anchor.Y = cellWidth
+			anchor.Y + cellWidth
 			);
 	}
 
@@ -89,25 +113,37 @@ internal static class TicTacToeDrawer
 	{
 		g.DrawLine(
 			crossPen, 
-			new Point(anchor.X * cellWidth, anchor.Y  * cellWidth), 
-			new Point((anchor.X + 1) * cellWidth, (anchor.Y + 1) * cellWidth)
+			new Point(
+					anchor.X * cellWidth + sizedPenWidth,
+					anchor.Y * cellWidth + sizedPenWidth
+				), 
+			new Point(
+					(anchor.X + 1) * cellWidth - sizedPenWidth, 
+					(anchor.Y + 1) * cellWidth - sizedPenWidth
+				)
 			);
 		g.DrawLine(
 			crossPen,
-			new Point(anchor.X * cellWidth, (anchor.Y + 1) * cellWidth),
-			new Point((anchor.X + 1) * cellWidth, anchor.Y * cellWidth)
+			new Point(
+					anchor.X * cellWidth + sizedPenWidth,
+					(anchor.Y + 1) * cellWidth - sizedPenWidth
+				),
+			new Point(
+					(anchor.X + 1) * cellWidth - sizedPenWidth,
+					anchor.Y * cellWidth + sizedPenWidth
+				)
 			);
 	}
 
-	internal static void DrawCross(Graphics g, Point anchor, int cellWidth)
+	internal static void DrawCross(Graphics g, Point anchor, int cellWidth, Pen? pen = null)
 	{
 		g.DrawLine(
-			crossPen,
+			pen ?? crossPen,
 			anchor,
 			new Point(anchor.X + cellWidth, anchor.Y + cellWidth)
 			);
 		g.DrawLine(
-			crossPen,
+			pen ?? crossPen,
 			new Point(anchor.X, anchor.Y + cellWidth),
 			new Point(anchor.X + cellWidth, anchor.Y)
 			);

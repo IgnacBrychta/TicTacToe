@@ -40,6 +40,8 @@
 			pictureBox1 = new PictureBox();
 			groupBox4 = new GroupBox();
 			tableScreen = new PictureBox();
+			groupBox5 = new GroupBox();
+			sponsoredPictureBox = new PictureBox();
 			groupBox1.SuspendLayout();
 			groupBox3.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scoreCirclesPictureBox).BeginInit();
@@ -49,6 +51,8 @@
 			((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
 			groupBox4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)tableScreen).BeginInit();
+			groupBox5.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)sponsoredPictureBox).BeginInit();
 			SuspendLayout();
 			// 
 			// groupBox1
@@ -59,7 +63,7 @@
 			groupBox1.Controls.Add(pictureBox1);
 			groupBox1.Location = new Point(12, 12);
 			groupBox1.Name = "groupBox1";
-			groupBox1.Size = new Size(400, 1400);
+			groupBox1.Size = new Size(400, 1410);
 			groupBox1.TabIndex = 0;
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Informace";
@@ -138,7 +142,7 @@
 			// 
 			currentPlayePictureBox.Location = new Point(16, 38);
 			currentPlayePictureBox.Name = "currentPlayePictureBox";
-			currentPlayePictureBox.Size = new Size(336, 336);
+			currentPlayePictureBox.Size = new Size(336, 345);
 			currentPlayePictureBox.TabIndex = 1;
 			currentPlayePictureBox.TabStop = false;
 			// 
@@ -153,31 +157,51 @@
 			// groupBox4
 			// 
 			groupBox4.Controls.Add(tableScreen);
-			groupBox4.Location = new Point(432, 28);
+			groupBox4.Location = new Point(432, 11);
 			groupBox4.Name = "groupBox4";
-			groupBox4.Size = new Size(2140, 1400);
+			groupBox4.Size = new Size(1410, 1410);
 			groupBox4.TabIndex = 1;
 			groupBox4.TabStop = false;
-			groupBox4.Text = "groupBox4";
+			groupBox4.Text = "Mřížka s piškvorkami";
 			// 
 			// tableScreen
 			// 
-			tableScreen.Location = new Point(16, 34);
+			tableScreen.Location = new Point(12, 35);
 			tableScreen.Name = "tableScreen";
-			tableScreen.Size = new Size(2100, 1360);
+			tableScreen.Size = new Size(1380, 1360);
 			tableScreen.TabIndex = 0;
 			tableScreen.TabStop = false;
+			// 
+			// groupBox5
+			// 
+			groupBox5.Controls.Add(sponsoredPictureBox);
+			groupBox5.Location = new Point(1860, 12);
+			groupBox5.Name = "groupBox5";
+			groupBox5.Size = new Size(700, 1410);
+			groupBox5.TabIndex = 2;
+			groupBox5.TabStop = false;
+			groupBox5.Text = "Sponzorovaný obsah";
+			// 
+			// sponsoredPictureBox
+			// 
+			sponsoredPictureBox.Location = new Point(6, 34);
+			sponsoredPictureBox.Name = "sponsoredPictureBox";
+			sponsoredPictureBox.Size = new Size(671, 1200);
+			sponsoredPictureBox.TabIndex = 0;
+			sponsoredPictureBox.TabStop = false;
 			// 
 			// TicTacToe
 			// 
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
 			AutoSize = true;
-			ClientSize = new Size(1926, 1441);
+			AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			ClientSize = new Size(4479, 1197);
+			Controls.Add(groupBox5);
 			Controls.Add(groupBox4);
 			Controls.Add(groupBox1);
 			Name = "TicTacToe";
-			Text = "Form1";
+			Text = "Ignácovy piškvorky";
 			groupBox1.ResumeLayout(false);
 			groupBox3.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scoreCirclesPictureBox).EndInit();
@@ -187,6 +211,8 @@
 			((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
 			groupBox4.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)tableScreen).EndInit();
+			groupBox5.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)sponsoredPictureBox).EndInit();
 			ResumeLayout(false);
 		}
 
@@ -204,5 +230,7 @@
 		private GroupBox groupBox4;
 		private PictureBox tableScreen;
 		private Button buttonRestart;
+		private GroupBox groupBox5;
+		private PictureBox sponsoredPictureBox;
 	}
 }
