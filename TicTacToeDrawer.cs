@@ -2,7 +2,7 @@
 
 internal static class TicTacToeDrawer
 {
-	public const int cellWidth = 68;
+	public static int cellWidth = 68;
 	public static Color crossColor = Color.Red;
 	public static Color circleColor = Color.Blue;
 	public const float penWidth = 10f;

@@ -29,7 +29,9 @@ internal class AdvertisementController
 		adsFileNames = files.ToArray();
 		ads = new Bitmap[fileCount];
 		this.billboard = billboard;
-		billboard.Image = new Bitmap(billboard.Width, billboard.Height);
+		Bitmap b = new Bitmap(Convert.ToInt32(billboard.Width / TicTacToe.scaleX), Convert.ToInt32(billboard.Height / TicTacToe.scaleY));
+		Graphics.FromImage(b).Clear(Color.White);
+		billboard.Image = b;
 		timer = new Timer() { Interval = 5000 };
 		timer.Tick += Timer_Tick;
 		billboard.Click += Billboard_Click;
@@ -41,7 +43,8 @@ internal class AdvertisementController
 	{
 		for (int i = 0; i < adsFileNames.Length; i++)
 		{
-			ads[i] = new Bitmap(adsFileNames[i]);
+			Bitmap originalSize = new Bitmap(adsFileNames[i]);
+			ads[i] = new Bitmap(originalSize, billboard.Width, billboard.Height);
 		}
 	}
 

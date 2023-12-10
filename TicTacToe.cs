@@ -1,4 +1,4 @@
-namespace TicTacToe;
+ï»¿namespace TicTacToe;
 
 public partial class TicTacToe : Form
 {
@@ -13,11 +13,28 @@ public partial class TicTacToe : Form
 	Bitmap? currentPlayerCircles;
 	bool erasing = false;
 	readonly Cursor eraser = new Cursor("../../../resources/rubber eraser.ico");
+	public static float scaleX;
+	public static float scaleY;
+	public static float offsetScaleX = 0f;
+	public static float offsetScaleY = 0f;
+	public RectangleF resizedScreen;
+	Rectangle originalScreen = new Rectangle(0, 0, 2560, 1600);
 	public TicTacToe()
 	{
+		if (Screen.PrimaryScreen is null) throw new Exception("No screen connected");
+
+		if(Screen.PrimaryScreen.WorkingArea.Width != originalScreen.Width || Screen.PrimaryScreen.WorkingArea.Height != originalScreen.Height)
+		{
+			ResizeMenu resizeMenu = new ResizeMenu();
+			_ = resizeMenu.ShowDialog();
+			offsetScaleX = -resizeMenu.offsetScaleX; 
+			offsetScaleY = -resizeMenu.offsetScaleY;
+		}
 		InitializeComponent();
 		SetControlTheme(this);
 		SetColorTheme(this);
+		CalculateScaleFactor();
+		ResizeAllControls(this);
 		CreateTableArray(table);
 		WindowState = FormWindowState.Maximized;
 		ConfigureUI();
@@ -27,15 +44,37 @@ public partial class TicTacToe : Form
 		SetSubscriptions();
 		Icon = new Icon("../../../resources/icon.ico");
 		new AdvertisementController("../../../resources/ads", sponsoredPictureBox) { RefreshDelay = 6000 }.Start();
+		TicTacToeDrawer.cellWidth = Convert.ToInt32(TicTacToeDrawer.cellWidth / scaleX);
 #if !IgnoreDisplayWarning
 		MessageBox.Show(
-			"Tento program byl vyvíjen pro 10\" 2560 px × 1600 px displej GPD Win Max 2, je možné, že se na tomto displeji nebude vše zobrazovat správnì.",
-			"Upozornìní",
+			"Tento program byl vyvÃ­jen pro 10\" 2560 px Ã— 1600 px displej GPD Win Max 2, je moÅ¾nÃ©, Å¾e se na tomto displeji nebude vÅ¡e zobrazovat sprÃ¡vnÄ›.",
+			"UpozornÃ¬nÃ­",
 			MessageBoxButtons.OK,
 			MessageBoxIcon.Warning
 			);
 #endif
 	}
+
+	private void ResizeAllControls(Control controls)
+	{
+		foreach (Control control in controls.Controls)
+		{
+			ResizeAllControls(control);
+			control.Size = new Size(Convert.ToInt32(control.Size.Width * resizedScreen.Width), Convert.ToInt32(control.Size.Height * resizedScreen.Height));
+			control.Location = new Point(Convert.ToInt32(control.Location.X * resizedScreen.Width), Convert.ToInt32(control.Location.Y * resizedScreen.Width));
+		}
+	}
+
+	private void CalculateScaleFactor()
+	{
+		Rectangle currentScreen = Screen.PrimaryScreen!.WorkingArea;
+
+		scaleX = originalScreen.Width * 1f / currentScreen.Width + offsetScaleX;
+		scaleY = originalScreen.Height * 1f / currentScreen.Height + offsetScaleY;
+
+		resizedScreen = new RectangleF(0f, 0f, scaleX, scaleY);
+
+	} 
 
 	private void SetSubscriptions()
 	{
@@ -136,12 +175,12 @@ public partial class TicTacToe : Form
 
 		cell.cellContent = currentPlayer;
 
-		(bool horizontalWin, List<TicTacToeCell>? cellsHorizontal) = TryFindWinnerHorizontally(currentPlayer);
-		(bool verticalWin, List<TicTacToeCell>? cellsVertical) = TryFindWinnerVertically(currentPlayer);
-		(bool diagonalTopLeftWin, List<TicTacToeCell>? cellsTopLeftDiagonal) = TryFindWinnerFromTopLeft(currentPlayer);
-		(bool diagonalTopRightWin, List<TicTacToeCell>? cellsTopRightDiagonal) = TryFindWinnerFromTopRight(currentPlayer);
-		(bool diagonalBottomRightWin, List<TicTacToeCell>? cellsBottomRightDiagonal) = TryFindWinnerFromBottomRight(currentPlayer);
-		(bool diagonalBottomLeftWin, List<TicTacToeCell>? cellsBottomLeftDiagonal) = TryFindWinnerFromBottomLeft(currentPlayer);
+		(bool horizontalWin, List<TicTacToeCell>? cellsHorizontal) =					TryFindWinnerHorizontally(currentPlayer);
+		(bool verticalWin, List<TicTacToeCell>? cellsVertical) =						TryFindWinnerVertically(currentPlayer);
+		(bool diagonalTopLeftWin, List<TicTacToeCell>? cellsTopLeftDiagonal) =			TryFindWinnerFromTopLeft(currentPlayer);
+		(bool diagonalTopRightWin, List<TicTacToeCell>? cellsTopRightDiagonal) =		TryFindWinnerFromTopRight(currentPlayer);
+		(bool diagonalBottomRightWin, List<TicTacToeCell>? cellsBottomRightDiagonal) =	TryFindWinnerFromBottomRight(currentPlayer);
+		(bool diagonalBottomLeftWin, List<TicTacToeCell>? cellsBottomLeftDiagonal) =	TryFindWinnerFromBottomLeft(currentPlayer);
 		currentPlayerWon = horizontalWin || verticalWin || diagonalTopLeftWin || diagonalTopRightWin || diagonalBottomRightWin || diagonalBottomLeftWin;
 
 		if (currentPlayerWon)
@@ -152,12 +191,12 @@ public partial class TicTacToe : Form
 			// must be AddRange() and not winningCells = cellsHorizontal
 			// the player might win in more than one direction
 			List<TicTacToeCell> winningCells = new();
-			if (horizontalWin) winningCells.AddRange(cellsHorizontal!);
-			if (verticalWin) winningCells.AddRange(cellsVertical!);
-			if (diagonalTopLeftWin) winningCells.AddRange(cellsTopLeftDiagonal!);
-			if (diagonalTopRightWin) winningCells.AddRange(cellsTopRightDiagonal!);
+			if (horizontalWin)			winningCells.AddRange(cellsHorizontal!);
+			if (verticalWin)			winningCells.AddRange(cellsVertical!);
+			if (diagonalTopLeftWin)		winningCells.AddRange(cellsTopLeftDiagonal!);
+			if (diagonalTopRightWin)	winningCells.AddRange(cellsTopRightDiagonal!);
 			if (diagonalBottomRightWin) winningCells.AddRange(cellsBottomRightDiagonal!);
-			if (diagonalBottomLeftWin) winningCells.AddRange(cellsBottomLeftDiagonal!);
+			if (diagonalBottomLeftWin)	winningCells.AddRange(cellsBottomLeftDiagonal!);
 
 			// highlighted (winning) cells are shown with a different color
 			winningCells.ForEach(cell => cell.highlight = true);
@@ -184,8 +223,8 @@ public partial class TicTacToe : Form
 	private void CurrentPlayerWon()
 	{
 		MessageBox.Show(
-			"Je to prostì borec. GG.",
-			$"{(currentPlayer == CellContent.Cross ? "Køížky" : "Koleèka")} vyhrávají!",
+			"Je to prostÃ¬ borec. GG.",
+			$"{(currentPlayer == CellContent.Cross ? "KÃ¸Ã­Å¾ky" : "KoleÃ¨ka")} vyhrÃ¡vajÃ­!",
 			MessageBoxButtons.OK,
 			MessageBoxIcon.Information
 			);
