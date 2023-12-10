@@ -18,13 +18,21 @@ public partial class TicTacToe : Form
 	public static float offsetScaleX = 0f;
 	public static float offsetScaleY = 0f;
 	public RectangleF resizedScreen;
-	Rectangle originalScreen = new Rectangle(0, 0, 2560, 1600);
+	Rectangle originalScreen = new Rectangle(0, 0, 2560, 1520);
 	public TicTacToe()
 	{
 		if (Screen.PrimaryScreen is null) throw new Exception("No screen connected");
 
-		if(Screen.PrimaryScreen.WorkingArea.Width != originalScreen.Width || Screen.PrimaryScreen.WorkingArea.Height != originalScreen.Height)
+		if(!(Screen.PrimaryScreen.WorkingArea.Width == originalScreen.Width && Screen.PrimaryScreen.WorkingArea.Height == originalScreen.Height))
 		{
+#if !IgnoreDisplayWarning
+			MessageBox.Show(
+				"Tento program byl vyvíjen pro 10\" 2560 px × 1600 px displej GPD Win Max 2, je možné, že se na tomto displeji nebude vše zobrazovat správně.",
+				"Upozornìní",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning
+				);
+#endif
 			ResizeMenu resizeMenu = new ResizeMenu();
 			_ = resizeMenu.ShowDialog();
 			offsetScaleX = -resizeMenu.offsetScaleX; 
@@ -45,14 +53,6 @@ public partial class TicTacToe : Form
 		Icon = new Icon("../../../resources/icon.ico");
 		new AdvertisementController("../../../resources/ads", sponsoredPictureBox) { RefreshDelay = 6000 }.Start();
 		TicTacToeDrawer.cellWidth = Convert.ToInt32(TicTacToeDrawer.cellWidth / scaleX);
-#if !IgnoreDisplayWarning
-		MessageBox.Show(
-			"Tento program byl vyvíjen pro 10\" 2560 px × 1600 px displej GPD Win Max 2, je možné, že se na tomto displeji nebude vše zobrazovat správně.",
-			"Upozornìní",
-			MessageBoxButtons.OK,
-			MessageBoxIcon.Warning
-			);
-#endif
 	}
 
 	private void ResizeAllControls(Control controls)
