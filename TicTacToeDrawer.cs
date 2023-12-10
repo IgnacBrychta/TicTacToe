@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TicTacToe;
+﻿namespace TicTacToe;
 
 internal static class TicTacToeDrawer
 {
@@ -15,9 +9,11 @@ internal static class TicTacToeDrawer
 	public const int sizedPenWidth = (int)penWidth / 2 + 3;
 	private static Color cellBorderColor = Color.White;
 	private static Color highlightedBorderColor = Color.Yellow;
+	private static Color mouseoverPenColor = Color.Green;
 	private static Pen crossPen = new Pen(crossColor, penWidth);
 	private static Pen cellBorderPen = new Pen(cellBorderColor, penWidth);
 	private static Pen highlightedCellBorderPen = new Pen(highlightedBorderColor, penWidth);
+	private static Pen mouseoverCellBorderPen = new Pen(mouseoverPenColor, penWidth);
 	private static Pen circlePen = new Pen(circleColor, penWidth);
 	/// <summary>
 	/// Draws a Tic Tac Toe table on a <see cref="Bitmap"/>, but does not clear it beforehead. Use <see cref="ClearScreen(Bitmap, Color)"/> for that instead.
@@ -39,7 +35,7 @@ internal static class TicTacToeDrawer
 		DrawHighlightedCells(g, table);
 	}
 
-	private static void DrawHighlightedCells(Graphics g, TicTacToeCell[,] table)
+	public static void DrawHighlightedCells(Graphics g, TicTacToeCell[,] table)
 	{
 		for (int i = 0; i < TicTacToe.tableSize; i++)
 		{
@@ -57,6 +53,17 @@ internal static class TicTacToeDrawer
 					);
 			}
 		}
+	}
+
+	public static void HighlightSingleCell(TicTacToeCell cell, Graphics g)
+	{
+		g.DrawRectangle(
+			mouseoverCellBorderPen,
+			cell.anchor.X * cellWidth,
+			cell.anchor.Y * cellWidth,
+			cellWidth,
+			cellWidth
+			);
 	}
 
 	private static void DrawTableCell(TicTacToeCell cell, Graphics g)

@@ -18,6 +18,7 @@ internal class AdvertisementController
 	}
 	private Timer timer;
 	private Random random = new Random();
+	private int index;
 
 	public AdvertisementController(string adFolderPath, PictureBox billboard)
 	{
@@ -31,7 +32,6 @@ internal class AdvertisementController
 		billboard.Image = new Bitmap(billboard.Width, billboard.Height);
 		timer = new Timer() { Interval = 5000 };
 		timer.Tick += Timer_Tick;
-		Timer_Tick(null, null);
 		billboard.Click += Billboard_Click;
 
 		FillAdsArray();
@@ -47,7 +47,7 @@ internal class AdvertisementController
 
 	private void Timer_Tick(object? sender, EventArgs? e)
 	{
-		int index = random.Next(0, adsFileNames.Length);
+		index = random.Next(0, adsFileNames.Length);
 		billboard.Image = ads[index];
 	}
 

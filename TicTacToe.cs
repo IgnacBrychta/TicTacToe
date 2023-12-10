@@ -11,9 +11,10 @@ public partial class TicTacToe : Form
 	int scoreCircles = 0;
 	Bitmap? currentPlayerCrosses;
 	Bitmap? currentPlayerCircles;
+	bool erasing = false;
+	readonly Cursor eraser = new Cursor("../../../resources/rubber eraser.ico");
 	public TicTacToe()
 	{
-#warning vrstvy zobrazovani 
 		InitializeComponent();
 		SetControlTheme(this);
 		SetColorTheme(this);
@@ -25,18 +26,87 @@ public partial class TicTacToe : Form
 		tableScreen.Image = bitmap;
 		SetSubscriptions();
 		Icon = new Icon("../../../resources/icon.ico");
-		new AdvertisementController("../../../resources", sponsoredPictureBox) { RefreshDelay = 6000 }.Start();
+		new AdvertisementController("../../../resources/ads", sponsoredPictureBox) { RefreshDelay = 6000 }.Start();
+#if !IgnoreDisplayWarning
+		MessageBox.Show(
+			"Tento program byl vyvíjen pro 10\" 2560 px × 1600 px displej GPD Win Max 2, je možné, že se na tomto displeji nebude vše zobrazovat správnì.",
+			"Upozornìní",
+			MessageBoxButtons.OK,
+			MessageBoxIcon.Warning
+			);
+#endif
 	}
 
 	private void SetSubscriptions()
 	{
 		tableScreen.MouseDown += TicTacToe_MouseDown;
 		buttonRestart.Click += ButtonRestart_Click;
+		buttonErase.Click += ButtonErase_Click;
+		tableScreen.MouseMove += TableScreen_MouseMove;
+		Load += TicTacToe_Load;
+	}
+
+	private void TicTacToe_Load(object? sender, EventArgs e)
+	{
+		MaximumSize = Size;
+		MinimumSize = Size;
+	}
+
+	private void TableScreen_MouseMove(object? sender, MouseEventArgs e)
+	{
+		TicTacToeCell? cell = FindHitCell(e.X, e.Y);
+		if (cell is null) return;
+
+		Bitmap bitmap = (Bitmap)tableScreen.Image;
+		Graphics g = Graphics.FromImage(bitmap);
+		TicTacToeDrawer.ClearScreen(bitmap, Color.Black);
+		TicTacToeDrawer.DrawTable(bitmap, table);
+		if (currentPlayerWon) TicTacToeDrawer.DrawHighlightedCells(g, table);
+		TicTacToeDrawer.HighlightSingleCell(cell, g);
+		tableScreen.Image = bitmap;
+	}
+
+	private void StopErasing()
+	{
+		erasing = false;
+		Cursor = Cursors.Hand;
+	}
+
+	private void ButtonErase_Click(object? sender, EventArgs e)
+	{
+		if (currentPlayerWon) return;
+
+		if (erasing)
+		{
+			SwitchCurrentPlayer();
+			StopErasing();
+			return;
+		}
+
+		if (!IsTableEmpty()) return;
+
+		erasing = true;
+		SwitchCurrentPlayer();
+		Cursor = eraser;
+	}
+
+	private bool IsTableEmpty()
+	{
+		for (int i = 0; i < tableSize; i++)
+		{
+			for (int j = 0; j < tableSize; j++)
+			{
+				if (table[i, j].cellContent != CellContent.None) return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void ButtonRestart_Click(object? sender, EventArgs e)
 	{
 		currentPlayerWon = false;
+		StopErasing();
 		SwitchCurrentPlayer();
 		CreateTableArray(table);
 		DrawTable();
@@ -47,6 +117,16 @@ public partial class TicTacToe : Form
 		TicTacToeCell? cell = FindHitCell(e.X, e.Y);
 		if (cell is null || currentPlayerWon) return;
 
+		if (erasing)
+		{
+			if (cell.cellContent != currentPlayer) return;
+			cell.cellContent = CellContent.None;
+			StopErasing();
+			DrawTable();
+			return;
+		}
+
+
 		HandleCellSelect(cell);
 	}
 
@@ -56,22 +136,28 @@ public partial class TicTacToe : Form
 
 		cell.cellContent = currentPlayer;
 
-		(bool horizontalWin, List<TicTacToeCell>? cellsHorizontal) = TryFindWinnerHorinzontally(currentPlayer);
+		(bool horizontalWin, List<TicTacToeCell>? cellsHorizontal) = TryFindWinnerHorizontally(currentPlayer);
 		(bool verticalWin, List<TicTacToeCell>? cellsVertical) = TryFindWinnerVertically(currentPlayer);
-		(bool diagonalWin, List<TicTacToeCell>? cellsDiagonal) = TryFindWinnerFromTopLeft(currentPlayer);
-		currentPlayerWon = horizontalWin || verticalWin || diagonalWin;
+		(bool diagonalTopLeftWin, List<TicTacToeCell>? cellsTopLeftDiagonal) = TryFindWinnerFromTopLeft(currentPlayer);
+		(bool diagonalTopRightWin, List<TicTacToeCell>? cellsTopRightDiagonal) = TryFindWinnerFromTopRight(currentPlayer);
+		(bool diagonalBottomRightWin, List<TicTacToeCell>? cellsBottomRightDiagonal) = TryFindWinnerFromBottomRight(currentPlayer);
+		(bool diagonalBottomLeftWin, List<TicTacToeCell>? cellsBottomLeftDiagonal) = TryFindWinnerFromBottomLeft(currentPlayer);
+		currentPlayerWon = horizontalWin || verticalWin || diagonalTopLeftWin || diagonalTopRightWin || diagonalBottomRightWin || diagonalBottomLeftWin;
 
 		if (currentPlayerWon)
 		{
 			if (currentPlayer == CellContent.Cross) scoreCrosses++;
 			else scoreCircles++;
 
-			// must be AddRange() and not winningCells = cellsHorizontal - 
+			// must be AddRange() and not winningCells = cellsHorizontal
 			// the player might win in more than one direction
 			List<TicTacToeCell> winningCells = new();
 			if (horizontalWin) winningCells.AddRange(cellsHorizontal!);
 			if (verticalWin) winningCells.AddRange(cellsVertical!);
-			if (diagonalWin) winningCells.AddRange(cellsDiagonal!);
+			if (diagonalTopLeftWin) winningCells.AddRange(cellsTopLeftDiagonal!);
+			if (diagonalTopRightWin) winningCells.AddRange(cellsTopRightDiagonal!);
+			if (diagonalBottomRightWin) winningCells.AddRange(cellsBottomRightDiagonal!);
+			if (diagonalBottomLeftWin) winningCells.AddRange(cellsBottomLeftDiagonal!);
 
 			// highlighted (winning) cells are shown with a different color
 			winningCells.ForEach(cell => cell.highlight = true);
@@ -79,7 +165,6 @@ public partial class TicTacToe : Form
 			CurrentPlayerWon();
 		}
 		else SwitchCurrentPlayer();
-
 
 		DrawTable();
 	}
@@ -207,7 +292,7 @@ public partial class TicTacToe : Form
 		control.ForeColor = Color.White;
 	}
 
-	private (bool, List<TicTacToeCell>?) TryFindWinnerHorinzontally(CellContent shape)
+	private (bool, List<TicTacToeCell>?) TryFindWinnerHorizontally(CellContent shape)
 	{
 		int shapeCount = 0;
 		List<TicTacToeCell> cells = new();
@@ -226,11 +311,39 @@ public partial class TicTacToe : Form
 					shapeCount = 0;
 					cells.Clear();
 				}
-				//shapeCount = cell.cellContent == shape ? shapeCount + 1 : 0;
-				if (shapeCount == elementsInRowToWin) return (true, cells);
+				if (shapeCount == elementsInRowToWin)
+				{
+					var (moreCellsWinningExist, moreCells) = TryFindMoreWinningCellsHorizontally(cell, shape);
+					if (moreCellsWinningExist) cells.AddRange(moreCells!.GetRange(0, elementsInRowToWin - 1));
+					return (true, cells);
+				}
 			}
 			shapeCount = 0;
 			cells.Clear();
+		}
+
+		return (false, null);
+	}
+
+	private (bool, List<TicTacToeCell>?) TryFindMoreWinningCellsHorizontally(TicTacToeCell ticTacToeCell, CellContent shape)
+	{
+		int row = ticTacToeCell.anchor.Y;
+		List<TicTacToeCell> cells = new();
+		int shapeCount = 0;
+		for (int i = tableSize - 1; i >= 0; i--)
+		{
+			TicTacToeCell cell = table[i, row];
+			if (cell.cellContent == shape)
+			{
+				shapeCount++;
+				cells.Add(cell);
+			}
+			else
+			{
+				shapeCount = 0;
+				cells.Clear();
+			}
+			if (shapeCount == elementsInRowToWin) return (true, cells);
 		}
 
 		return (false, null);
@@ -255,10 +368,39 @@ public partial class TicTacToe : Form
 					shapeCount = 0;
 					cells.Clear();
 				}
-				if (shapeCount == elementsInRowToWin) return (true, cells);
+				if (shapeCount == elementsInRowToWin)
+				{
+					var (moreCellsWinningExist, moreCells) = TryFindMoreWinningCellsVertically(cell, shape);
+					if (moreCellsWinningExist) cells.AddRange(moreCells!.GetRange(0, elementsInRowToWin - 1));
+					return (true, cells);
+				}
 			}
 			shapeCount = 0;
 			cells.Clear();
+		}
+
+		return (false, null);
+	}
+
+	private (bool, List<TicTacToeCell>?) TryFindMoreWinningCellsVertically(TicTacToeCell ticTacToeCell, CellContent shape)
+	{
+		int column = ticTacToeCell.anchor.X;
+		List<TicTacToeCell> cells = new();
+		int shapeCount = 0;
+		for (int i = tableSize - 1; i >= 0; i--)
+		{
+			TicTacToeCell cell = table[column, i];
+			if (cell.cellContent == shape)
+			{
+				shapeCount++;
+				cells.Add(cell);
+			}
+			else
+			{
+				shapeCount = 0;
+				cells.Clear();
+			}
+			if (shapeCount == elementsInRowToWin) return (true, cells);
 		}
 
 		return (false, null);
@@ -292,11 +434,82 @@ public partial class TicTacToe : Form
 			}
 		}
 
-		cells.Clear();
+		return (false, null);
+	}
+
+	private (bool, List<TicTacToeCell>?) TryFindWinnerFromBottomRight(CellContent shape)
+	{
+		List<TicTacToeCell> cells = new();
+		// Check diagonals from bottom-right to top-left
+		for (int startCol = tableSize - elementsInRowToWin; startCol >= 0; startCol--)
+		{
+			for (int startRow = tableSize - elementsInRowToWin; startRow >= 0; startRow--)
+			{
+				int shapeCount = 0;
+				cells.Clear();
+				for (int i = 0; i < elementsInRowToWin; i++)
+				{
+					TicTacToeCell cell = table[startRow + i, startCol + i];
+					if (cell.anchor.X == 19 && cell.anchor.Y == 19)
+					{
+						;
+					}
+					if (cell.cellContent == shape)
+					{
+						shapeCount++;
+						cells.Add(cell);
+					}
+					else
+					{
+						shapeCount = 0;
+						cells.Clear();
+					}
+					if (shapeCount == elementsInRowToWin) return (true, cells);
+				}
+			}
+		}
+
+		return (false, null);
+	}
+
+	private (bool, List<TicTacToeCell>?) TryFindWinnerFromTopRight(CellContent shape)
+	{
+		List<TicTacToeCell> cells = new();
 		// Check diagonals from top-right to bottom-left
 		for (int startCol = elementsInRowToWin - 1; startCol < tableSize; startCol++)
 		{
 			for (int startRow = 0; startRow <= tableSize - elementsInRowToWin; startRow++)
+			{
+				int shapeCount = 0;
+				cells.Clear();
+				for (int i = 0; i < elementsInRowToWin; i++)
+				{
+					TicTacToeCell cell = table[startRow + i, startCol - i];
+					if (cell.cellContent == shape)
+					{
+						shapeCount++;
+						cells.Add(cell);
+					}
+					else
+					{
+						shapeCount = 0;
+						cells.Clear();
+					}
+					if (shapeCount == elementsInRowToWin) return (true, cells);
+				}
+			}
+		}
+
+		return (false, null);
+	}
+
+	private (bool, List<TicTacToeCell>?) TryFindWinnerFromBottomLeft(CellContent shape)
+	{
+		List<TicTacToeCell> cells = new();
+		// Check diagonals from bottom-left to top-right
+		for (int startCol = tableSize - 1; startCol >= elementsInRowToWin; startCol--)
+		{
+			for (int startRow = tableSize - elementsInRowToWin - 1; startRow >= 0; startRow--)
 			{
 				int shapeCount = 0;
 				cells.Clear();

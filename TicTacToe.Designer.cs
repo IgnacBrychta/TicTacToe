@@ -28,7 +28,9 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TicTacToe));
 			groupBox1 = new GroupBox();
+			buttonErase = new Button();
 			buttonRestart = new Button();
 			groupBox3 = new GroupBox();
 			scoreCirclesPictureBox = new PictureBox();
@@ -41,6 +43,8 @@
 			groupBox4 = new GroupBox();
 			tableScreen = new PictureBox();
 			groupBox5 = new GroupBox();
+			richTextBox1 = new RichTextBox();
+			richTextBoxDisclaimer = new RichTextBox();
 			sponsoredPictureBox = new PictureBox();
 			groupBox1.SuspendLayout();
 			groupBox3.SuspendLayout();
@@ -57,6 +61,7 @@
 			// 
 			// groupBox1
 			// 
+			groupBox1.Controls.Add(buttonErase);
 			groupBox1.Controls.Add(buttonRestart);
 			groupBox1.Controls.Add(groupBox3);
 			groupBox1.Controls.Add(groupBox2);
@@ -68,8 +73,19 @@
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Informace";
 			// 
+			// buttonErase
+			// 
+			buttonErase.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+			buttonErase.Location = new Point(6, 1120);
+			buttonErase.Name = "buttonErase";
+			buttonErase.Size = new Size(371, 147);
+			buttonErase.TabIndex = 3;
+			buttonErase.Text = "Guma";
+			buttonErase.UseVisualStyleBackColor = true;
+			// 
 			// buttonRestart
 			// 
+			buttonRestart.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
 			buttonRestart.Location = new Point(6, 924);
 			buttonRestart.Name = "buttonRestart";
 			buttonRestart.Size = new Size(371, 177);
@@ -136,7 +152,7 @@
 			groupBox2.Size = new Size(371, 396);
 			groupBox2.TabIndex = 1;
 			groupBox2.TabStop = false;
-			groupBox2.Text = "Na řadě:";
+			groupBox2.Text = "Na řadě";
 			// 
 			// currentPlayePictureBox
 			// 
@@ -174,19 +190,41 @@
 			// 
 			// groupBox5
 			// 
+			groupBox5.Controls.Add(richTextBox1);
+			groupBox5.Controls.Add(richTextBoxDisclaimer);
 			groupBox5.Controls.Add(sponsoredPictureBox);
 			groupBox5.Location = new Point(1860, 12);
 			groupBox5.Name = "groupBox5";
-			groupBox5.Size = new Size(700, 1410);
+			groupBox5.Size = new Size(689, 1410);
 			groupBox5.TabIndex = 2;
 			groupBox5.TabStop = false;
 			groupBox5.Text = "Sponzorovaný obsah";
 			// 
+			// richTextBox1
+			// 
+			richTextBox1.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+			richTextBox1.Location = new Point(12, 1312);
+			richTextBox1.Name = "richTextBox1";
+			richTextBox1.ReadOnly = true;
+			richTextBox1.Size = new Size(671, 65);
+			richTextBox1.TabIndex = 2;
+			richTextBox1.Text = resources.GetString("richTextBox1.Text");
+			// 
+			// richTextBoxDisclaimer
+			// 
+			richTextBoxDisclaimer.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+			richTextBoxDisclaimer.Location = new Point(12, 870);
+			richTextBoxDisclaimer.Name = "richTextBoxDisclaimer";
+			richTextBoxDisclaimer.ReadOnly = true;
+			richTextBoxDisclaimer.Size = new Size(671, 214);
+			richTextBoxDisclaimer.TabIndex = 1;
+			richTextBoxDisclaimer.Text = "Upozornění: nejsme schopni ověřit důvěryhodnost inzercí, proto doporučujume být velmi obezřetní.";
+			// 
 			// sponsoredPictureBox
 			// 
-			sponsoredPictureBox.Location = new Point(6, 34);
+			sponsoredPictureBox.Location = new Point(46, 34);
 			sponsoredPictureBox.Name = "sponsoredPictureBox";
-			sponsoredPictureBox.Size = new Size(671, 1200);
+			sponsoredPictureBox.Size = new Size(617, 841);
 			sponsoredPictureBox.TabIndex = 0;
 			sponsoredPictureBox.TabStop = false;
 			// 
@@ -194,9 +232,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(13F, 32F);
 			AutoScaleMode = AutoScaleMode.Font;
-			AutoSize = true;
-			AutoSizeMode = AutoSizeMode.GrowAndShrink;
-			ClientSize = new Size(4479, 1197);
+			ClientSize = new Size(2632, 1625);
 			Controls.Add(groupBox5);
 			Controls.Add(groupBox4);
 			Controls.Add(groupBox1);
@@ -232,5 +268,8 @@
 		private Button buttonRestart;
 		private GroupBox groupBox5;
 		private PictureBox sponsoredPictureBox;
+		private RichTextBox richTextBoxDisclaimer;
+		private Button buttonErase;
+		private RichTextBox richTextBox1;
 	}
 }
