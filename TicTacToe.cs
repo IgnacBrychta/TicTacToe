@@ -28,7 +28,7 @@ public partial class TicTacToe : Form
 #if !IgnoreDisplayWarning
 			MessageBox.Show(
 				"Tento program byl vyvíjen pro 10\" 2560 px × 1600 px displej GPD Win Max 2, je možné, že se na tomto displeji nebude vše zobrazovat správně.",
-				"Upozornìní",
+				"Upozornění",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Warning
 				);
@@ -60,6 +60,7 @@ public partial class TicTacToe : Form
 		foreach (Control control in controls.Controls)
 		{
 			ResizeAllControls(control);
+			control.Font = new Font(control.Font.Name, control.Font.Size * scaleX); 
 			control.Size = new Size(Convert.ToInt32(control.Size.Width * resizedScreen.Width), Convert.ToInt32(control.Size.Height * resizedScreen.Height));
 			control.Location = new Point(Convert.ToInt32(control.Location.X * resizedScreen.Width), Convert.ToInt32(control.Location.Y * resizedScreen.Width));
 		}
