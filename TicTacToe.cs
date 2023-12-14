@@ -13,7 +13,7 @@ public partial class TicTacToe : Form
 	Bitmap? currentPlayerCircles;
 	bool erasing = false;
 	readonly Cursor eraser = new Cursor("../../../resources/rubber eraser.ico");
-	public static float scaleX;
+	public static float scaleX;	
 	public static float scaleY;
 	public static float offsetScaleX = 0f;
 	public static float offsetScaleY = 0f;
